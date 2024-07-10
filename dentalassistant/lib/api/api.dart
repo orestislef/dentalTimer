@@ -4,7 +4,7 @@ import 'package:dentalassistant/helpers/shared_preferences.dart';
 import 'package:dentalassistant/models/product.dart';
 import 'package:http/http.dart' as http;
 
-const baseUrl = 'http://192.168.24.21:8080/dental/api.php';
+const baseUrl = 'http://144.24.189.255/dental/api.php';
 
 class Api {
   static final Api _api = Api._internal();
