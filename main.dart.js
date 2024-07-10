@@ -45490,7 +45490,7 @@ var $async$fO=A.H(function(a,b){if(a===1){o=b
 s=p}while(true)switch(s){case 0:p=4
 l=t.N
 s=7
-return A.K(A.azk(A.ea("http://144.24.189.255/dental/api.php",0,null),A.ax(["Content-Type","application/json"],l,l)),$async$fO)
+return A.K(A.azk(A.ea("https://144.24.189.255/dental/api.php",0,null),A.ax(["Content-Type","application/json"],l,l)),$async$fO)
 case 7:n=b
 s=n.b===200?8:10
 break
@@ -45532,7 +45532,7 @@ yr(a){return this.agC(a)},
 agC(a){var s=0,r=A.G(t.y),q,p=2,o,n,m,l,k,j
 var $async$yr=A.H(function(b,c){if(b===1){o=c
 s=p}while(true)switch(s){case 0:p=4
-m=A.ea("http://144.24.189.255/dental/api.php",0,null)
+m=A.ea("https://144.24.189.255/dental/api.php",0,null)
 l=t.N
 l=A.ax(["Content-Type","application/json"],l,l)
 s=7
@@ -45561,7 +45561,7 @@ Ax(a){return this.anp(a)},
 anp(a){var s=0,r=A.G(t.y),q,p=2,o,n,m,l,k,j
 var $async$Ax=A.H(function(b,c){if(b===1){o=c
 s=p}while(true)switch(s){case 0:p=4
-m=A.ea("http://144.24.189.255/dental/api.php",0,null)
+m=A.ea("https://144.24.189.255/dental/api.php",0,null)
 l=t.N
 l=A.ax(["Content-Type","application/json"],l,l)
 s=7
@@ -45590,7 +45590,7 @@ yz(a){return this.agU(a)},
 agU(a){var s=0,r=A.G(t.y),q,p=2,o,n,m,l,k,j,i
 var $async$yz=A.H(function(b,c){if(b===1){o=c
 s=p}while(true)switch(s){case 0:p=4
-m=A.ea("http://144.24.189.255/dental/api.php",0,null)
+m=A.ea("https://144.24.189.255/dental/api.php",0,null)
 l=t.N
 k=A.ax(["Content-Type","application/json"],l,l)
 s=7
