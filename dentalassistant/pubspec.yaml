@@ -11,15 +11,16 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   vibration: ^1.9.0
-  flutter_local_notifications: ^17.2.1+1
+  flutter_local_notifications: ^17.2.1+2
   audioplayers: ^6.0.0
   permission_handler: ^11.3.1
   circular_countdown_timer: ^0.2.3
-  http: ^1.2.1
+  http: ^1.2.2
   shared_preferences: ^2.2.3
   easy_localization: ^3.0.7
   toggle_switch: ^2.3.0
   duration_picker: ^1.2.0
+  speech_to_text: ^6.6.2
 
 dev_dependencies:
   flutter_test:

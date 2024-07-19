@@ -57,5 +57,16 @@
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Need to access speech recognition</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Need to access microphone</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>Need to access Bluetooth</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Need to access Bluetooth always</string>
+    <key>NSBluetoothWhenInUseUsageDescription</key>
+    <string>Need to access Bluetooth when in use</string>
+
 </dict>
 </plist>
