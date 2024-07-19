@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vibration/vibration.dart';
 
+import '../helpers/speech_recognition.dart';
 import '../models/product.dart';
 
 class TimerScreen extends StatefulWidget {
@@ -30,6 +31,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   bool bothTimersFinished = false;
   bool isFinishingAnimation = false;
 
+  late SpeechRecognitionHelper _speechHelper;
+  late bool _hasSpeechToText;
+
   @override
   void initState() {
     super.initState();
@@ -44,11 +48,31 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
     // Initialize audio player
     audioPlayer = AudioPlayer();
+
+    _hasSpeechToText = true;
+    _speechHelper = SpeechRecognitionHelper(
+      onStart: (message) {
+        debugPrint(message);
+        _playSound();
+      },
+      onStop: (message) {
+        debugPrint(message);
+        _playSound();
+      },
+      onError: (String text) {
+        debugPrint(text);
+        _hasSpeechToText = false;
+      },
+    );
+    _speechHelper.initialize().then((value) {
+      _speechHelper.startListening();
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _speechHelper.stopListening();
     super.dispose();
   }
 

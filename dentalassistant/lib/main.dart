@@ -3,7 +3,7 @@ import 'package:dentalassistant/screens/welcome.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import 'helpers/language_helper.dart';
+import 'helpers/language.dart';
 import 'helpers/shared_preferences.dart';
 
 void main() async {
