@@ -57,7 +57,6 @@ class SpeechRecognitionHelper {
         onResult: _onResult,
       );
       _isListening = true;
-      onStart("Listening started");
     }
   }
 
@@ -65,12 +64,11 @@ class SpeechRecognitionHelper {
     if (_isListening) {
       _speech.stop();
       _isListening = false;
-      onStop("Listening stopped");
     }
   }
 
   void _onResult(SpeechRecognitionResult result) {
-    if (result.finalResult && result.recognizedWords.isNotEmpty) {
+    if (result.recognizedWords.isNotEmpty) {
       String recognizedWords = result.recognizedWords.toLowerCase();
       if (recognizedWords.contains("start")) {
         onStart("Start command recognized");
