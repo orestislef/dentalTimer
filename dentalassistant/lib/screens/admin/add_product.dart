@@ -1,22 +1,20 @@
-import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:toggle_switch/toggle_switch.dart';
+import 'package:duration_picker/duration_picker.dart';
 
 import '../../api/api.dart';
 import '../../models/product.dart';
 
 class AddProduct extends StatefulWidget {
-  const AddProduct({super.key});
+  const AddProduct({Key? key}) : super(key: key);
 
   @override
   State<AddProduct> createState() => _AddProductState();
 }
 
 class _AddProductState extends State<AddProduct> {
-  int selectedList = 0;
-  Duration duration = Duration.zero;
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  List<Duration> durations = [];
   final _formKey = GlobalKey<FormState>();
   bool isAdding = false;
 
@@ -26,11 +24,7 @@ class _AddProductState extends State<AddProduct> {
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: [
         ElevatedButton(
-          onPressed: isAdding
-              ? null
-              : () {
-                  onPressedOnAdd();
-                },
+          onPressed: isAdding ? null : _onPressedAddProduct,
           child: const Text('Add Product'),
         ),
       ],
@@ -40,87 +34,107 @@ class _AddProductState extends State<AddProduct> {
       body: isAdding
           ? const Center(child: CircularProgressIndicator.adaptive())
           : Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Scrollbar(
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: Column(
-                      children: [
-                        ToggleSwitch(
-                          activeBgColor: const [Colors.blue],
-                          activeFgColor: Colors.white,
-                          inactiveBgColor: Colors.grey,
-                          inactiveFgColor: Colors.white,
-                          minWidth: 200.0,
-                          initialLabelIndex: selectedList,
-                          totalSwitches: 2,
-                          labels: const ['First', 'Second'],
-                          onToggle: (index) {
-                            setState(() {
-                              selectedList = index ?? 0;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 20.0),
-                        TextFormField(
-                          onTapOutside: (_) {
-                            FocusScope.of(context).unfocus();
-                          },
-                          controller: titleController,
-                          decoration: const InputDecoration(
-                            labelText: 'Product Title',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a product title';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20.0),
-                        TextFormField(
-                          onTapOutside: (_) {
-                            FocusScope.of(context).unfocus();
-                          },
-                          controller: descriptionController,
-                          decoration: const InputDecoration(
-                            labelText: 'Product Description',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a product description';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20.0),
-                        DurationPicker(
-                          baseUnit: BaseUnit.second,
-                          onChange: (value) {
-                            setState(() {
-                              duration = value;
-                            });
-                          },
-                          duration: duration,
-                        ),
-                        const SizedBox(height: 20.0),
-                      ],
+        padding: const EdgeInsets.all(10.0),
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20.0),
+                  TextFormField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Product Title',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a product title';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20.0),
+                  TextFormField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Product Description',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a product description';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20.0),
+                  const Text(
+                    'Durations (in seconds):',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10.0),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: durations.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(
+                          'Duration ${index + 1}: ${durations[index].inSeconds} seconds',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              durations.removeAt(index);
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10.0),
+                  ElevatedButton.icon(
+                    onPressed: _addDuration,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Duration'),
+                  ),
+                  const SizedBox(height: 20.0),
+                ],
               ),
             ),
+          ),
+        ),
+      ),
     );
   }
 
-  void onPressedOnAdd() {
+  void _addDuration() async {
+    Duration? pickedDuration = await showDurationPicker(
+      baseUnit: BaseUnit.second,
+      context: context,
+      initialTime: Duration.zero,
+
+    );
+
+    if (pickedDuration != null && pickedDuration.inSeconds > 0) {
+      setState(() {
+        durations.add(pickedDuration);
+      });
+    }
+  }
+
+  void _onPressedAddProduct() {
     if (_formKey.currentState?.validate() ?? false) {
-      if (duration.inSeconds == 0) {
+      if (durations.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please select a duration'),
+            content: Text('Please add at least one duration'),
           ),
         );
         return;
@@ -128,18 +142,17 @@ class _AddProductState extends State<AddProduct> {
       setState(() {
         isAdding = true;
       });
-      Api()
-          .createProduct(
-              product: Product(
+
+      final product = Product(
         id: -1,
         title: titleController.text,
         description: descriptionController.text,
-        forFirstList: selectedList == 0,
-        duration: duration,
+        duration: durations.map((d) => d.inSeconds).toList(),
         createdAt: DateTime.now(),
-      ))
-          .then((allOK) {
-        if (allOK) {
+      );
+
+      Api().createProduct(product: product).then((success) {
+        if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Product added successfully'),
@@ -152,13 +165,11 @@ class _AddProductState extends State<AddProduct> {
               content: Text('Failed to add product'),
             ),
           );
-          setState(() {
-            isAdding = false;
-          });
         }
+        setState(() {
+          isAdding = false;
+        });
       });
-    } else {
-      debugPrint('Validation failed');
     }
   }
 }

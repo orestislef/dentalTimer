@@ -1,12 +1,11 @@
-import 'package:dentalassistant/api/api.dart';
-import 'package:dentalassistant/models/product.dart';
-import 'package:dentalassistant/screens/admin/show_all_products.dart';
-import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:toggle_switch/toggle_switch.dart';
+import '../../api/api.dart';
+import '../../models/product.dart';
+import '../../screens/admin/show_all_products.dart';
+import 'package:duration_picker/duration_picker.dart';
 
 class EditProduct extends StatefulWidget {
-  const EditProduct({super.key});
+  const EditProduct({Key? key}) : super(key: key);
 
   @override
   State<EditProduct> createState() => _EditProductState();
@@ -18,24 +17,24 @@ class _EditProductState extends State<EditProduct> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  late int selectedList;
-  late Duration duration;
+  List<Duration> durations = [];
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return selectedProduct == null
         ? ShowAllProducts(
-            onTapOnProduct: (product) {
-              selectedList = product.forFirstList ? 0 : 1;
-              titleController.text = product.title;
-              descriptionController.text = product.description;
-              duration = product.duration;
-              setState(() {
-                selectedProduct = product;
-              });
-            },
-          )
+      onTapOnProduct: (product) {
+        titleController.text = product.title;
+        descriptionController.text = product.description;
+        durations = product.duration
+            .map((seconds) => Duration(seconds: seconds))
+            .toList();
+        setState(() {
+          selectedProduct = product;
+        });
+      },
+    )
         : _buildEditProduct();
   }
 
@@ -44,11 +43,7 @@ class _EditProductState extends State<EditProduct> {
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: [
         ElevatedButton(
-          onPressed: isEditing
-              ? null
-              : () {
-                  onPressedSave();
-                },
+          onPressed: isEditing ? null : _onPressedSave,
           child: const Text('Save'),
         ),
       ],
@@ -57,96 +52,116 @@ class _EditProductState extends State<EditProduct> {
       ),
       body: isEditing
           ? const Center(
-              child: Column(
-                children: [
-                  Text('Updating product..'),
-                  SizedBox(height: 20),
-                  CircularProgressIndicator.adaptive(),
-                ],
-              ),
-            )
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Updating product..'),
+            SizedBox(height: 20),
+            CircularProgressIndicator.adaptive(),
+          ],
+        ),
+      )
           : Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Scrollbar(
-              child: SingleChildScrollView(
-                child: Form(
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      ToggleSwitch(
-                        activeBgColor: const [Colors.blue],
-                        activeFgColor: Colors.white,
-                        inactiveBgColor: Colors.grey,
-                        inactiveFgColor: Colors.white,
-                        minWidth: 200.0,
-                        initialLabelIndex: selectedList,
-                        totalSwitches: 2,
-                        labels: const ['First', 'Second'],
-                        onToggle: (index) {
-                          setState(() {
-                            selectedList = index ?? 0;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        onTapOutside: (_) {
-                          FocusScope.of(context).unfocus();
-                        },
-                        controller: titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Product Title',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a product title';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        onTapOutside: (_) {
-                          FocusScope.of(context).unfocus();
-                        },
-                        controller: descriptionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Product Description',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a product description';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      DurationPicker(
-                        baseUnit: BaseUnit.second,
-                        onChange: (value) {
-                          setState(() {
-                            duration = value;
-                          });
-                        },
-                        duration: duration,
-                      ),
-                      const SizedBox(height: 20.0),
-                    ],
+        padding: const EdgeInsets.all(10.0),
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            child: Form(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Product Title',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a product title';
+                      }
+                      return null;
+                    },
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Product Description',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a product description';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Durations (in seconds):',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: durations.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(
+                          'Duration ${index + 1}: ${durations[index].inSeconds} seconds',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              durations.removeAt(index);
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _addDuration,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Duration'),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
-  void onPressedSave() {
-    if (_formKey.currentState!.validate()) {
-      if (duration.inSeconds == 0) {
+  void _addDuration() async {
+    Duration? pickedDuration = await showDurationPicker(
+      context: context,
+      baseUnit: BaseUnit.second,
+      initialTime: Duration.zero,
+    );
+
+    if (pickedDuration != null && pickedDuration.inSeconds > 0) {
+      setState(() {
+        durations.add(pickedDuration);
+      });
+    }
+  }
+
+  void _onPressedSave() {
+    if (_formKey.currentState?.validate() ?? false) {
+      if (durations.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please enter a valid duration'),
+            content: Text('Please add at least one duration'),
           ),
         );
         return;
@@ -154,17 +169,16 @@ class _EditProductState extends State<EditProduct> {
       setState(() {
         isEditing = true;
       });
-      Api()
-          .updateProduct(
-        product: Product(
-            id: selectedProduct!.id,
-            title: titleController.text,
-            description: descriptionController.text,
-            forFirstList: selectedList == 0 ? true : false,
-            duration: duration,
-            createdAt: DateTime.now()),
-      )
-          .then((allOK) {
+
+      final updatedProduct = Product(
+        id: selectedProduct!.id,
+        title: titleController.text,
+        description: descriptionController.text,
+        duration: durations.map((d) => d.inSeconds).toList(),
+        createdAt: selectedProduct!.createdAt,
+      );
+
+      Api().updateProduct(product: updatedProduct).then((allOK) {
         if (allOK) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -178,10 +192,10 @@ class _EditProductState extends State<EditProduct> {
               content: Text('Failed to update product'),
             ),
           );
-          setState(() {
-            isEditing = false;
-          });
         }
+        setState(() {
+          isEditing = false;
+        });
       });
     }
   }

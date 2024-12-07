@@ -1,147 +1,181 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-import 'package:dentalassistant/helpers/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:vibration/vibration.dart';
 
+import '../helpers/notifications.dart';
+import '../helpers/shared_preferences.dart';
 import '../helpers/speech_recognition.dart';
 import '../models/product.dart';
 
 class TimerScreen extends StatefulWidget {
-  final Product product1;
-  final Product product2;
+  final List<Product> products;
 
-  const TimerScreen(
-      {super.key, required this.product1, required this.product2});
+  const TimerScreen({
+    Key? key,
+    required this.products,
+  }) : super(key: key);
 
   @override
   State<TimerScreen> createState() => _TimerScreenState();
 }
 
-class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
-  late FlutterLocalNotificationsPlugin localNotificationsPlugin;
-  late AudioPlayer audioPlayer;
-  late CountDownController _controller;
-
+class _TimerScreenState extends State<TimerScreen> {
+  late final List<Product> productsQueue;
   late Product currentProduct;
+  late int currentProductIndex;
+  late int currentDurationIndex;
+
   late Duration remainingTime;
+  late final CountDownController _controller;
+
   bool isTimerRunning = false;
-  bool bothTimersFinished = false;
   bool isFinishingAnimation = false;
 
-  late SpeechRecognitionHelper _speechHelper;
-  late bool _hasSpeechToText;
+  late final NotificationHelper notificationHelper;
+  late final AudioPlayer audioPlayer;
+  late final SpeechRecognitionHelper speechRecognitionHelper;
+
+  final SharedPreferencesHelper _preferencesHelper = SharedPreferencesHelper();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    currentProduct = widget.product1;
-    remainingTime = currentProduct.duration;
 
+    // Initialize variables
+    productsQueue = List.from(widget.products);
+    currentProductIndex = 0;
+    currentProduct = productsQueue[currentProductIndex];
+    currentDurationIndex = 0;
+
+    remainingTime =
+        Duration(seconds: currentProduct.duration[currentDurationIndex]);
     _controller = CountDownController();
-
-    _initializeNotificationPlugin();
-    _requestNotificationPermission();
-
-    // Initialize audio player
+    notificationHelper = NotificationHelper();
     audioPlayer = AudioPlayer();
 
-    _hasSpeechToText = true;
-    _speechHelper = SpeechRecognitionHelper(
-      onStart: (message) {
-        debugPrint(message);
-        if (!isTimerRunning) {
-          startTimer();
-          _vibrate();
-          _playSound();
-        }
-      },
-      onStop: (message) {
-        debugPrint(message);
-        if (isTimerRunning) {
-          stopTimer();
-          _vibrate();
-          _playSound();
-        }
-
-      },
-      onError: (String text) {
-        debugPrint(text);
-        _hasSpeechToText = false;
-      },
+    // Initialize Speech Recognition
+    speechRecognitionHelper = SpeechRecognitionHelper(
+      onStart: (message) => _handleSpeechCommand(startCommand: true),
+      onStop: (message) => _handleSpeechCommand(startCommand: false),
+      onError: (error) => debugPrint('Speech Recognition Error: $error'),
     );
-    _speechHelper.initialize().then((value) {
-      _speechHelper.startListening();
+
+    speechRecognitionHelper.initialize().then((_) {
+      speechRecognitionHelper.startListening();
     });
+
+    _preferencesHelper.ensureInitialized();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _speechHelper.stopListening();
+    speechRecognitionHelper.stopListening();
+    audioPlayer.dispose();
     super.dispose();
   }
 
-  void _initializeNotificationPlugin() {
-    localNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const ios = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(android: android, iOS: ios);
-    localNotificationsPlugin.initialize(initSettings);
+  void _handleSpeechCommand({required bool startCommand}) {
+    if (startCommand && !isTimerRunning) {
+      startTimer();
+    } else if (!startCommand && isTimerRunning) {
+      stopTimer();
+    }
+    _triggerFeedback(isNotification: startCommand);
   }
 
-  void _requestNotificationPermission() async {
-    if (await Permission.notification.request().isGranted) {
-      // Notifications are allowed
+  void _onComplete() async {
+    _triggerFeedback();
+
+    setState(() {
+      isFinishingAnimation = true;
+    });
+
+    // Wait for animation to finish
+    await Future.delayed(const Duration(seconds: 2));
+
+    setState(() {
+      isFinishingAnimation = false;
+      isTimerRunning = false; // Ensure the next timer doesn't auto-start
+    });
+
+    if (currentDurationIndex < currentProduct.duration.length - 1) {
+      // Move to the next duration for the current product
+      setState(() {
+        currentDurationIndex++;
+        remainingTime =
+            Duration(seconds: currentProduct.duration[currentDurationIndex]);
+      });
+    } else if (currentProductIndex < productsQueue.length - 1) {
+      // Move to the next product
+      _sendNotification("${currentProduct.title} timers finished!");
+      setState(() {
+        currentProductIndex++;
+        currentProduct = productsQueue[currentProductIndex];
+        currentDurationIndex = 0;
+        remainingTime =
+            Duration(seconds: currentProduct.duration[currentDurationIndex]);
+      });
     } else {
-      // Notifications are not allowed
+      // All products and their durations are completed
+      _sendNotification("All products and timers are finished!");
+      _showCompletionDialog();
     }
   }
 
-  void _sendNotification(String message) async {
-    bool enabled = await SharedPreferencesHelper().showNotification();
-    if (!enabled) {
-      return;
+  Future<void> _sendNotification(String message) async {
+    notificationHelper.sendNotification(
+      title: "Timer Notification",
+      message: message,
+    );
+  }
+
+  Future<void> _triggerFeedback({bool isNotification = true}) async {
+    if (await _preferencesHelper.playSound()) {
+      _playSound(isNotification: isNotification);
     }
-    const androidDetails = AndroidNotificationDetails(
-      'channelId',
-      'channelName',
-      channelDescription: 'channelDescription',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-    const iosDetails = DarwinNotificationDetails();
-    const generalNotificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await localNotificationsPlugin.show(
-      0,
-      'Timer Notification',
-      message,
-      generalNotificationDetails,
-    );
+    if (await _preferencesHelper.vibrate()) {
+      _vibrate();
+    }
   }
 
-  void _playSound() {
-    SharedPreferencesHelper().playSound().then((enabled) {
-      if (enabled) {
-        audioPlayer.play(AssetSource('sound/notification.mp3'));
+  Future<void> _playSound({bool isNotification = true}) async {
+    try {
+      await audioPlayer.play(
+        AssetSource(
+            isNotification ? "sound/notification.mp3" : "sound/dink.mp3"),
+      );
+    } catch (e) {
+      debugPrint("Error playing sound: $e");
+    }
+  }
+
+  Future<void> _vibrate() async {
+    try {
+      // Check if vibration is enabled in user preferences
+      final enabled = await SharedPreferencesHelper().vibrate();
+      if (!enabled) return;
+
+      // Check if the device supports vibration
+      if (await Vibration.hasVibrator() ?? false) {
+        // Use pattern if amplitude control is supported, else use a simple vibration
+        if (await Vibration.hasAmplitudeControl() ?? false) {
+          Vibration.vibrate(
+            pattern: [300, 200, 300, 200], // Vibration on/off pattern
+            intensities: [128, 0, 255, 0], // Optional intensities (if supported)
+          );
+        } else {
+          // Fallback to simple vibration
+          Vibration.vibrate(duration: 1000);
+        }
+      } else {
+        debugPrint("Vibration not supported on this device");
       }
-    });
+    } catch (e) {
+      debugPrint("Error during vibration: $e");
+    }
   }
 
-  void _vibrate() {
-    SharedPreferencesHelper().vibrate().then((enabled) {
-      if (enabled) {
-        Vibration.vibrate(duration: 2000, pattern: [300, 200, 300, 200]);
-      }
-    });
-  }
 
   void startTimer() {
     setState(() {
@@ -157,119 +191,106 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _controller.pause();
   }
 
-  void _onComplete() {
-    setState(() {
-      isFinishingAnimation = true;
-    });
-    Future.delayed(const Duration(seconds: 3), () {
-      setState(() {
-        isFinishingAnimation = false; // Reset the animation
-      });
-    });
-    if (currentProduct == widget.product1) {
-      setState(() {
-        currentProduct = widget.product2;
-        remainingTime = currentProduct.duration;
-        isTimerRunning = false;
-        _sendNotification('First product timer finished!');
-        _controller.restart(duration: remainingTime.inSeconds);
-        _controller.pause();
-      });
-    } else {
-      setState(() {
-        isTimerRunning = false;
-        bothTimersFinished = true;
-        _sendNotification('Second product timer finished!');
-      });
-    }
-    _playSound();
-    _vibrate();
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("All Timers Finished"),
+        content: const Text("You have completed all timers for all products."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text("Back"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Timer for ${currentProduct.title}'),
+        backgroundColor: isFinishingAnimation ? Colors.red : Colors.white,
+        title: Row(
+          children: [
+            Text(
+              "${currentProduct.title} (${currentProductIndex + 1}/${productsQueue.length})",
+            ),
+            const SizedBox(width: 10),
+            ValueListenableBuilder<bool>(
+              valueListenable: speechRecognitionHelper.isListening,
+              builder: (context, isListening, child) {
+                return Icon(
+                  Icons.mic,
+                  color: isListening ? Colors.red : Colors.grey,
+                );
+              },
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Center(
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.timer,
+                    color: Colors.blue,
+                  ),
+                  Text(
+                    "${currentDurationIndex + 1}/${currentProduct.duration.length}",
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       backgroundColor: isFinishingAnimation ? Colors.red : Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: bothTimersFinished
-                ? [
-                    const Text(
-                      'Timers finished!',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 16),
-                      ),
-                      child: const Text('Back'),
-                    ),
-                  ]
-                : [
-                    Text(
-                      currentProduct.description,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    CircularCountDownTimer(
-                      duration: remainingTime.inSeconds,
-                      controller: _controller,
-                      width: MediaQuery.of(context).size.width / 1.5,
-                      height: MediaQuery.of(context).size.height / 2.0,
-                      fillColor: Colors.blue,
-                      backgroundColor: null,
-                      strokeWidth: 10.0,
-                      strokeCap: StrokeCap.round,
-                      textStyle: const TextStyle(
-                        fontSize: 48.0,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      isTimerTextShown: true,
-                      autoStart: false,
-                      isReverse: true,
-                      isReverseAnimation: true,
-                      onComplete: _onComplete,
-                      ringColor: Colors.transparent,
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: isTimerRunning ? stopTimer : startTimer,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 16),
-                        textStyle: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      child: isTimerRunning ? const Text('Stop Timer') : const Text('Start Timer'),
-                    ),
-                  ],
-          ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              currentProduct.description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            CircularCountDownTimer(
+              duration: remainingTime.inSeconds,
+              controller: _controller,
+              width: MediaQuery.of(context).size.width / 1.5,
+              height: MediaQuery.of(context).size.height / 2.0,
+              fillColor: Colors.blue,
+              backgroundColor: null,
+              strokeWidth: 10.0,
+              strokeCap: StrokeCap.round,
+              textStyle: const TextStyle(
+                fontSize: 48.0,
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
+              isTimerTextShown: true,
+              autoStart: false,
+              isReverse: true,
+              isReverseAnimation: true,
+              onComplete: _onComplete,
+              ringColor: Colors.transparent,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: isTimerRunning ? stopTimer : startTimer,
+              child: Text(isTimerRunning ? 'Stop Timer' : 'Start Timer'),
+            ),
+          ],
         ),
       ),
     );

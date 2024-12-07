@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -8,8 +8,7 @@ typedef SpeechCallback = void Function(String text);
 
 class SpeechRecognitionHelper {
   late stt.SpeechToText _speech;
-  bool _isListening = false;
-  String _recognizedText = ""; // Add this variable to track the recognized text
+  final ValueNotifier<bool> isListening = ValueNotifier<bool>(false); // Use a single ValueNotifier
   SpeechCallback onStart;
   SpeechCallback onStop;
   SpeechCallback onError;
@@ -43,30 +42,30 @@ class SpeechRecognitionHelper {
 
   void _onStatus(String status) {
     if (status == 'done' || status == 'notListening') {
-      _isListening = false;
+      isListening.value = false; // Update the existing ValueNotifier
+    } else if (status == 'listening') {
+      isListening.value = true;
     }
   }
 
   void _onError(SpeechRecognitionError error) {
-    _isListening = false;
+    isListening.value = false; // Update the existing ValueNotifier
     onError("Error: ${error.errorMsg}");
   }
 
   void startListening() {
-    if (!_isListening) {
-      _recognizedText =
-          ""; // Clear the recognized text when starting a new session
+    if (!isListening.value) {
       _speech.listen(
         onResult: _onResult,
       );
-      _isListening = true;
+      isListening.value = true; // Update the existing ValueNotifier
     }
   }
 
   void stopListening() {
-    if (_isListening) {
+    if (isListening.value) {
       _speech.stop();
-      _isListening = false;
+      isListening.value = false; // Update the existing ValueNotifier
     }
   }
 

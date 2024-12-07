@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:dentalassistant/helpers/shared_preferences.dart';
 import 'package:dentalassistant/models/product.dart';
 import 'package:http/http.dart' as http;
 
-const baseUrl = 'http://144.24.189.255/dental/api.php';
+const baseUrl = 'http://192.168.1.5/dental/api.php';
 
 class Api {
   static final Api _api = Api._internal();
@@ -22,7 +21,7 @@ class Api {
   Future<List<Product>> getProducts() async {
     try {
       final response =
-          await http.get(Uri.parse(baseUrl), headers: _getHeader());
+      await http.get(Uri.parse(baseUrl), headers: _getHeader());
       if (response.statusCode == 200) {
         List<Product> products = [];
         jsonDecode(response.body).forEach((product) {
@@ -41,20 +40,21 @@ class Api {
   Future<bool> createProduct({required Product product}) async {
     try {
       final response = await http.post(
-        Uri.parse(baseUrl),
+        Uri.parse('$baseUrl?method=create'), // Explicit method for API logic
         headers: _getHeader(),
-        body: jsonEncode(product.toJson()),
+        body: jsonEncode(product.toJson()), // Properly encode the product
       );
+
       return response.statusCode == 201;
     } catch (e) {
       return false;
     }
   }
 
-  Future<bool> updateProduct({required product}) async {
+  Future<bool> updateProduct({required Product product}) async {
     try {
       final response = await http.put(
-        Uri.parse(baseUrl),
+        Uri.parse('$baseUrl?method=update'),
         headers: _getHeader(),
         body: jsonEncode(product.toJson()),
       );
@@ -67,7 +67,7 @@ class Api {
   Future<bool> deleteProduct({required int id}) async {
     try {
       final response = await http.delete(
-        Uri.parse(baseUrl),
+        Uri.parse('$baseUrl?method=delete'),
         headers: _getHeader(),
         body: jsonEncode({'id': id.toString()}),
       );

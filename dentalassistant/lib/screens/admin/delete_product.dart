@@ -1,10 +1,10 @@
-import 'package:dentalassistant/api/api.dart';
-import 'package:dentalassistant/models/product.dart';
-import 'package:dentalassistant/screens/admin/show_all_products.dart';
 import 'package:flutter/material.dart';
+import '../../api/api.dart';
+import '../../models/product.dart';
+import '../../screens/admin/show_all_products.dart';
 
 class DeleteProduct extends StatefulWidget {
-  const DeleteProduct({super.key});
+  const DeleteProduct({Key? key}) : super(key: key);
 
   @override
   State<DeleteProduct> createState() => _DeleteProductState();
@@ -18,12 +18,12 @@ class _DeleteProductState extends State<DeleteProduct> {
   Widget build(BuildContext context) {
     return selectedProduct == null
         ? ShowAllProducts(
-            onTapOnProduct: (product) {
-              setState(() {
-                selectedProduct = product;
-              });
-            },
-          )
+      onTapOnProduct: (product) {
+        setState(() {
+          selectedProduct = product;
+        });
+      },
+    )
         : _buildDeleteProduct();
   }
 
@@ -35,8 +35,12 @@ class _DeleteProductState extends State<DeleteProduct> {
           onPressed: isDeleting
               ? null
               : () {
-                  onPressedOnDelete();
-                },
+            _onPressedDelete();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
           child: const Text('Delete'),
         ),
       ],
@@ -45,47 +49,70 @@ class _DeleteProductState extends State<DeleteProduct> {
       ),
       body: Center(
         child: isDeleting
-            ? const Column(
-                children: [
-                  Text('Deleting...'),
-                  SizedBox(height: 20),
-                  CircularProgressIndicator.adaptive(),
-                ],
-              )
-            : Column(
-                children: [
-                  const Text(
-                    'Are you sure you want to delete this product?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      letterSpacing: 2.0,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Card(
-                      elevation: 5.0,
-                      child: ListTile(
-                        title: Text(selectedProduct!.title),
-                        subtitle: Text(selectedProduct!.description),
-                        trailing: Text(
-                            'Time: ${selectedProduct!.duration.inSeconds}s'),
-                        leading: Text(
-                            selectedProduct!.forFirstList ? 'First' : 'Second'),
-                      ),
-                    ),
-                  ),
-                ],
+            ? Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Text(
+              'Deleting...',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            SizedBox(height: 20),
+            CircularProgressIndicator.adaptive(),
+          ],
+        )
+            : Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Are you sure you want to delete this product?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  letterSpacing: 1.5,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Card(
+                elevation: 5.0,
+                child: ListTile(
+                  title: Text(
+                    selectedProduct!.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(selectedProduct!.description),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Durations:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(selectedProduct!.duration
+                          .map((d) => '${d}s')
+                          .join(', ')),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  void onPressedOnDelete() {
+  void _onPressedDelete() {
     setState(() {
       isDeleting = true;
     });

@@ -6,9 +6,9 @@ import '../models/product.dart';
 
 class ProductSelectionScreen extends StatefulWidget {
   const ProductSelectionScreen({
-    super.key,
+    Key? key,
     required this.products,
-  });
+  }) : super(key: key);
 
   final List<Product> products;
 
@@ -17,11 +17,17 @@ class ProductSelectionScreen extends StatefulWidget {
 }
 
 class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
-  Product? selectedProduct1;
-  Product? selectedProduct2;
+  final List<Product> products = [];
+  final List<Product> selectedProducts = [];
+  String searchQuery = "";
 
-  bool get isNextButtonEnabled =>
-      selectedProduct1 != null && selectedProduct2 != null;
+  @override
+  void initState() {
+    super.initState();
+    products.addAll(widget.products);
+  }
+
+  bool get isNextButtonEnabled => selectedProducts.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -41,102 +47,146 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
             },
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60.0),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Search products...",
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (query) {
+                setState(() {
+                  searchQuery = query.toLowerCase();
+                });
+              },
+            ),
+          ),
+        ),
       ),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: [
         ElevatedButton(
           onPressed: isNextButtonEnabled
               ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TimerScreen(
-                        product1: selectedProduct1!,
-                        product2: selectedProduct2!,
-                      ),
-                    ),
-                  );
-                }
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TimerScreen(
+                  products: List.from(selectedProducts),
+                ),
+              ),
+            );
+          }
               : null,
-          child: const Text('Next'),
+          child: Text(
+            isNextButtonEnabled
+                ? 'Next (${selectedProducts.length} Selected)'
+                : 'Next',
+          ),
         ),
       ],
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: _buildProductList(1),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ReorderableListView.builder(
+                itemCount: selectedProducts.length +
+                    _filteredUnselectedProducts().length,
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    // Reordering only within selected products
+                    if (oldIndex < selectedProducts.length &&
+                        newIndex <= selectedProducts.length) {
+                      if (newIndex > oldIndex) newIndex--;
+                      final product = selectedProducts.removeAt(oldIndex);
+                      selectedProducts.insert(newIndex, product);
+                    }
+                  });
+                },
+                itemBuilder: (context, index) {
+                  if (index < selectedProducts.length) {
+                    // Selected products
+                    final product = selectedProducts[index];
+                    return _buildSelectedProductCard(product);
+                  } else {
+                    // Remaining products (filtered)
+                    final product = _filteredUnselectedProducts()[
+                    index - selectedProducts.length];
+                    return _buildUnselectedProductCard(product);
+                  }
+                },
               ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: _buildProductList(2),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildProductList(int index) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          'Select Product $index',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+  Widget _buildSelectedProductCard(Product product) {
+    return Card(
+      key: ValueKey(product.id),
+      elevation: 2.0,
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Text(
+            (selectedProducts.indexOf(product) + 1).toString(),
+          ),
         ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: _buildProductListWidget(widget.products, index),
+        title: Text(
+          product.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-      ],
-    );
-  }
-
-  Widget _buildProductListWidget(List<Product> products, int index) {
-    List<Product> products1 =
-        products.where((product) => product.forFirstList).toList();
-    List<Product> products2 =
-        products.where((product) => !product.forFirstList).toList();
-
-    if ((index == 1 && products1.isEmpty) ^ (index == 2 && products2.isEmpty)) {
-      return const Text('No products available');
-    }
-    return Scrollbar(
-      child: ListView.builder(
-        itemCount: index == 1 ? products1.length : products2.length,
-        itemBuilder: (context, idx) {
-          final product = index == 1 ? products1[idx] : products2[idx];
-          final isSelected = (index == 1 && selectedProduct1 == product) ||
-              (index == 2 && selectedProduct2 == product);
-          return Card(
-            elevation: 2.0,
-            child: ListTile(
-              title: Text(product.title),
-              subtitle: Text(product.description),
-              leading: isSelected
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : const Icon(Icons.circle_outlined),
-              selected: isSelected,
-              onTap: () {
-                setState(() {
-                  if (index == 1) {
-                    selectedProduct1 = product;
-                  } else {
-                    selectedProduct2 = product;
-                  }
-                });
-              },
-            ),
-          );
+        subtitle: Text(product.description),
+        trailing: const Icon(Icons.drag_handle),
+        onTap: () {
+          setState(() {
+            // Remove the product from selected products
+            selectedProducts.remove(product);
+            products.add(product);
+          });
         },
       ),
     );
+  }
+
+  Widget _buildUnselectedProductCard(Product product) {
+    return Card(
+      key: ValueKey(product.id),
+      elevation: 2.0,
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      child: ListTile(
+        title: Text(
+          product.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(product.description),
+        trailing: const Icon(Icons.circle_outlined),
+        onTap: () {
+          setState(() {
+            // Add the product to selected products
+            selectedProducts.add(product);
+            products.remove(product);
+          });
+        },
+      ),
+    );
+  }
+
+  List<Product> _filteredUnselectedProducts() {
+    return products
+        .where((product) => product.title.toLowerCase().contains(searchQuery))
+        .toList();
   }
 }
