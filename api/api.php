@@ -42,6 +42,8 @@ function getProducts($conn) {
     
     $products = [];
     while ($row = $result->fetch_assoc()) {
+        // Decode the JSON field for duration
+        $row['duration'] = json_decode($row['duration'], true);
         $products[] = $row;
     }
     
@@ -51,7 +53,7 @@ function getProducts($conn) {
 function createProduct($conn) {
     $data = json_decode(file_get_contents("php://input"), true);
     
-    if (!isset($data['title'], $data['description'], $data['duration'], $data['for_first_list'])) {
+    if (!isset($data['title'], $data['description'], $data['duration'])) {
         http_response_code(400);
         echo json_encode(["error" => "Invalid input"]);
         return;
@@ -59,11 +61,10 @@ function createProduct($conn) {
     
     $title = $conn->real_escape_string($data['title']);
     $description = $conn->real_escape_string($data['description']);
-    $duration = intval($data['duration']);
-    $forFirstList = boolval($data['for_first_list']);
+    $duration = json_encode($data['duration']); // Encode duration as JSON
     
-    $stmt = $conn->prepare("INSERT INTO product (title, description, duration, for_first_list) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssii", $title, $description, $duration, $forFirstList);
+    $stmt = $conn->prepare("INSERT INTO product (title, description, duration) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $title, $description, $duration);
     
     if ($stmt->execute()) {
         http_response_code(201);
@@ -79,7 +80,7 @@ function createProduct($conn) {
 function updateProduct($conn) {
     $data = json_decode(file_get_contents("php://input"), true);
     
-    if (!isset($data['id'], $data['title'], $data['description'], $data['duration'], $data['for_first_list'])) {
+    if (!isset($data['id'], $data['title'], $data['description'], $data['duration'])) {
         http_response_code(400);
         echo json_encode(["error" => "Invalid input"]);
         return;
@@ -88,11 +89,10 @@ function updateProduct($conn) {
     $id = intval($data['id']);
     $title = $conn->real_escape_string($data['title']);
     $description = $conn->real_escape_string($data['description']);
-    $duration = intval($data['duration']);
-    $forFirstList = boolval($data['for_first_list']);
+    $duration = json_encode($data['duration']); // Encode duration as JSON
     
-    $stmt = $conn->prepare("UPDATE product SET title=?, description=?, duration=?, for_first_list=? WHERE id=?");
-    $stmt->bind_param("ssiii", $title, $description, $duration, $forFirstList, $id);
+    $stmt = $conn->prepare("UPDATE product SET title=?, description=?, duration=? WHERE id=?");
+    $stmt->bind_param("sssi", $title, $description, $duration, $id);
     
     if ($stmt->execute()) {
         echo json_encode(["message" => "Record updated successfully"]);

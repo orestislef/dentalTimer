@@ -28,8 +28,7 @@ $sql = "CREATE TABLE IF NOT EXISTS product (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-	for_first_list BOOLEAN NOT NULL,
-    duration INT NOT NULL,
+    duration JSON NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
