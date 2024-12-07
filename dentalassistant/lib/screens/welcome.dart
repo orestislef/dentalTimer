@@ -21,7 +21,7 @@ class _WelcomePageState extends State<WelcomePage>
   @override
   void initState() {
     super.initState();
-    _futureProduct = Api().getProducts();
+    _initializeFuture();
     _controller = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -31,6 +31,10 @@ class _WelcomePageState extends State<WelcomePage>
       curve: Curves.easeInOut,
     );
     _controller.forward();
+  }
+
+  void _initializeFuture() {
+    _futureProduct = Api().getProducts();
   }
 
   @override
@@ -53,7 +57,10 @@ class _WelcomePageState extends State<WelcomePage>
                   builder: (context) => const AdminPage(),
                 ),
               ).then((_) {
-                Api().getProducts();
+                // Refresh the product list when returning from AdminPage
+                setState(() {
+                  _initializeFuture();
+                });
               });
             },
           ),
@@ -67,11 +74,10 @@ class _WelcomePageState extends State<WelcomePage>
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: SizedBox(
-                height: MediaQuery.of(context).size.height *
-                    0.75, // 3/4 of the screen height
+                height: MediaQuery.of(context).size.height * 0.75,
                 width: MediaQuery.of(context).size.width,
                 child: Card(
-                  elevation: 10, // Shadow effect
+                  elevation: 10,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -82,8 +88,8 @@ class _WelcomePageState extends State<WelcomePage>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Placeholder(
-                          fallbackHeight: 150, // Placeholder height
-                          fallbackWidth: double.infinity, // Full width
+                          fallbackHeight: 150,
+                          fallbackWidth: double.infinity,
                         ),
                         const SizedBox(height: 16),
                         FutureBuilder<List<Product>>(
@@ -106,16 +112,16 @@ class _WelcomePageState extends State<WelcomePage>
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           ProductSelectionScreen(
-                                        products: snapshot.data!,
-                                      ),
+                                            products: snapshot.data!,
+                                          ),
                                     ),
-                                    (route) => false,
+                                        (route) => false,
                                   );
                                 },
                                 child: const Text('Continue'),
                               );
                             } else {
-                              return const Text('No data');
+                              return const Text('No data available.');
                             }
                           },
                         ),
