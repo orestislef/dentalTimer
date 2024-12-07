@@ -53,11 +53,20 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _speechHelper = SpeechRecognitionHelper(
       onStart: (message) {
         debugPrint(message);
-        _playSound();
+        if (!isTimerRunning) {
+          startTimer();
+          _vibrate();
+          _playSound();
+        }
       },
       onStop: (message) {
         debugPrint(message);
-        _playSound();
+        if (isTimerRunning) {
+          stopTimer();
+          _vibrate();
+          _playSound();
+        }
+
       },
       onError: (String text) {
         debugPrint(text);
@@ -139,6 +148,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       isTimerRunning = true;
     });
     _controller.start();
+  }
+
+  void stopTimer() {
+    setState(() {
+      isTimerRunning = false;
+    });
+    _controller.pause();
   }
 
   void _onComplete() {
@@ -239,7 +255,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: isTimerRunning ? null : startTimer,
+                      onPressed: isTimerRunning ? stopTimer : startTimer,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -250,7 +266,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: const Text('Start Timer'),
+                      child: isTimerRunning ? const Text('Stop Timer') : const Text('Start Timer'),
                     ),
                   ],
           ),

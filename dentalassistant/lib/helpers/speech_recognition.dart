@@ -9,6 +9,7 @@ typedef SpeechCallback = void Function(String text);
 class SpeechRecognitionHelper {
   late stt.SpeechToText _speech;
   bool _isListening = false;
+  String _recognizedText = ""; // Add this variable to track the recognized text
   SpeechCallback onStart;
   SpeechCallback onStop;
   SpeechCallback onError;
@@ -53,6 +54,8 @@ class SpeechRecognitionHelper {
 
   void startListening() {
     if (!_isListening) {
+      _recognizedText =
+          ""; // Clear the recognized text when starting a new session
       _speech.listen(
         onResult: _onResult,
       );
@@ -67,14 +70,23 @@ class SpeechRecognitionHelper {
     }
   }
 
-  void _onResult(SpeechRecognitionResult result) {
+  void _onResult(SpeechRecognitionResult result) async {
     if (result.recognizedWords.isNotEmpty) {
       String recognizedWords = result.recognizedWords.toLowerCase();
+
       if (recognizedWords.contains("start")) {
         onStart("Start command recognized");
+        _restartListening(); // Stop and restart listening
       } else if (recognizedWords.contains("stop")) {
         onStop("Stop command recognized");
+        _restartListening(); // Stop and restart listening
       }
     }
+  }
+
+  void _restartListening() async {
+    stopListening(); // Stop the current session
+    await Future.delayed(const Duration(milliseconds: 500));
+    startListening(); // Start a new session
   }
 }
