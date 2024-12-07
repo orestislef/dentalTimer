@@ -6,9 +6,9 @@ import '../models/product.dart';
 
 class ProductSelectionScreen extends StatefulWidget {
   const ProductSelectionScreen({
-    Key? key,
+    super.key,
     required this.products,
-  }) : super(key: key);
+  });
 
   final List<Product> products;
 
@@ -52,44 +52,44 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
         bottom: products.isEmpty
             ? null
             : PreferredSize(
-          preferredSize: const Size.fromHeight(60.0),
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: TextField(
-              onTapOutside: (_) {
-                FocusScope.of(context).unfocus();
-              },
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: "Search products...",
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      searchQuery = "";
-                    });
-                    searchController.clear();
-                    FocusScope.of(context).unfocus();
-                  },
-                )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: BorderSide.none,
+                preferredSize: const Size.fromHeight(60.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: TextField(
+                    onTapOutside: (_) {
+                      FocusScope.of(context).unfocus();
+                    },
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: "Search products...",
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  searchQuery = "";
+                                });
+                                searchController.clear();
+                                FocusScope.of(context).unfocus();
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    onChanged: (query) {
+                      setState(() {
+                        searchQuery = query.toLowerCase();
+                      });
+                    },
+                  ),
                 ),
-                filled: true,
-                fillColor: Colors.white,
               ),
-              onChanged: (query) {
-                setState(() {
-                  searchQuery = query.toLowerCase();
-                });
-              },
-            ),
-          ),
-        ),
       ),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: [
@@ -97,15 +97,15 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
           ElevatedButton(
             onPressed: isNextButtonEnabled
                 ? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TimerScreen(
-                    products: List.from(selectedProducts),
-                  ),
-                ),
-              );
-            }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TimerScreen(
+                          products: List.from(selectedProducts),
+                        ),
+                      ),
+                    );
+                  }
                 : null,
             child: Text(
               isNextButtonEnabled
@@ -116,49 +116,46 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
       ],
       body: products.isEmpty && selectedProducts.isEmpty
           ? const Center(
-        child: Text(
-          "No products available.",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        ),
-      )
-          : Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ReorderableListView(
-                buildDefaultDragHandles: false,
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    if (oldIndex < selectedProducts.length &&
-                        newIndex <= selectedProducts.length) {
-                      // Reorder only within the selected products
-                      if (newIndex > oldIndex) newIndex--;
-                      final product = selectedProducts.removeAt(oldIndex);
-                      selectedProducts.insert(newIndex, product);
-                    }
-                  });
-                },
-                children: [
-                  ...selectedProducts.map((product) =>
-                      _buildSelectedProductCard(product)).toList(),
-                  ..._filteredUnselectedProducts().map((product) =>
-                      _buildUnselectedProductCard(product)).toList(),
-                ],
+              child: Text(
+                "No products available.",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
-            ),
-          ],
-        ),
-      ),
+            )
+          : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ReorderableListView(
+                  buildDefaultDragHandles: false,
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      if (oldIndex < selectedProducts.length &&
+                          newIndex <= selectedProducts.length) {
+                        // Reorder only within the selected products
+                        if (newIndex > oldIndex) newIndex--;
+                        final product = selectedProducts.removeAt(oldIndex);
+                        selectedProducts.insert(newIndex, product);
+                      }
+                    });
+                  },
+                  children: [
+                    ...selectedProducts.map(
+                        (product) => _buildSelectedProductCard(product)),
+                    ..._filteredUnselectedProducts().map(
+                        (product) => _buildUnselectedProductCard(product)),
+                  ],
+                ),
+              ),
+            ],
+          ),
     );
   }
 
   Widget _buildSelectedProductCard(Product product) {
     return Card(
       key: ValueKey(product.id),
-      elevation: 2.0,
-      margin: const EdgeInsets.symmetric(vertical: 5),
+      elevation: 5.0,
+      margin: const EdgeInsets.all(10.0),
       child: ListTile(
         leading: CircleAvatar(
           child: Text(
@@ -188,8 +185,8 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
   Widget _buildUnselectedProductCard(Product product) {
     return Card(
       key: ValueKey(product.id),
-      elevation: 2.0,
-      margin: const EdgeInsets.symmetric(vertical: 5),
+      elevation: 5.0,
+      margin: const EdgeInsets.all(10.0),
       child: ListTile(
         title: Text(
           product.title,
