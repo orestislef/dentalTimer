@@ -21,7 +21,7 @@ class Api {
   Future<List<Product>> getProducts() async {
     try {
       final response =
-      await http.get(Uri.parse(baseUrl), headers: _getHeader());
+      await http.get(Uri.parse(baseUrl), headers: _getHeader()).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         List<Product> products = [];
         jsonDecode(response.body).forEach((product) {

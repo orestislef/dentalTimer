@@ -162,7 +162,12 @@ class _TimerScreenState extends State<TimerScreen> {
         if (await Vibration.hasAmplitudeControl() ?? false) {
           Vibration.vibrate(
             pattern: [300, 200, 300, 200], // Vibration on/off pattern
-            intensities: [128, 0, 255, 0], // Optional intensities (if supported)
+            intensities: [
+              128,
+              0,
+              255,
+              0
+            ], // Optional intensities (if supported)
           );
         } else {
           // Fallback to simple vibration
@@ -175,7 +180,6 @@ class _TimerScreenState extends State<TimerScreen> {
       debugPrint("Error during vibration: $e");
     }
   }
-
 
   void startTimer() {
     setState(() {
@@ -287,8 +291,22 @@ class _TimerScreenState extends State<TimerScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: isTimerRunning ? stopTimer : startTimer,
-              child: Text(isTimerRunning ? 'Stop Timer' : 'Start Timer'),
+              onPressed: () {
+                if (isTimerRunning) {
+                  stopTimer();
+                } else {
+                  startTimer();
+                }
+                _triggerFeedback();
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(isTimerRunning ? Icons.stop : Icons.play_arrow),
+                  const SizedBox(width: 10),
+                  Text(isTimerRunning ? 'Stop Timer' : 'Start Timer'),
+                ],
+              ),
             ),
           ],
         ),

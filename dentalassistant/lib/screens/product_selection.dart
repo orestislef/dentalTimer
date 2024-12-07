@@ -21,6 +21,8 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
   final List<Product> selectedProducts = [];
   String searchQuery = "";
 
+  final searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -47,14 +49,32 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
             },
           ),
         ],
-        bottom: PreferredSize(
+        bottom: products.isEmpty
+            ? null
+            : PreferredSize(
           preferredSize: const Size.fromHeight(60.0),
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextField(
+              onTapOutside: (_) {
+                FocusScope.of(context).unfocus();
+              },
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search products...",
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      searchQuery = "";
+                    });
+                    searchController.clear();
+                    FocusScope.of(context).unfocus();
+                  },
+                )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,
@@ -73,58 +93,59 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
       ),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: [
-        ElevatedButton(
-          onPressed: isNextButtonEnabled
-              ? () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TimerScreen(
-                  products: List.from(selectedProducts),
+        if (products.isNotEmpty || selectedProducts.isNotEmpty)
+          ElevatedButton(
+            onPressed: isNextButtonEnabled
+                ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TimerScreen(
+                    products: List.from(selectedProducts),
+                  ),
                 ),
-              ),
-            );
-          }
-              : null,
-          child: Text(
-            isNextButtonEnabled
-                ? 'Next (${selectedProducts.length} Selected)'
-                : 'Next',
+              );
+            }
+                : null,
+            child: Text(
+              isNextButtonEnabled
+                  ? 'Next (${selectedProducts.length} Selected)'
+                  : 'Next',
+            ),
           ),
-        ),
       ],
-      body: Padding(
+      body: products.isEmpty && selectedProducts.isEmpty
+          ? const Center(
+        child: Text(
+          "No products available.",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+      )
+          : Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ReorderableListView.builder(
-                itemCount: selectedProducts.length +
-                    _filteredUnselectedProducts().length,
+              child: ReorderableListView(
+                buildDefaultDragHandles: false,
                 onReorder: (oldIndex, newIndex) {
                   setState(() {
-                    // Reordering only within selected products
                     if (oldIndex < selectedProducts.length &&
                         newIndex <= selectedProducts.length) {
+                      // Reorder only within the selected products
                       if (newIndex > oldIndex) newIndex--;
                       final product = selectedProducts.removeAt(oldIndex);
                       selectedProducts.insert(newIndex, product);
                     }
                   });
                 },
-                itemBuilder: (context, index) {
-                  if (index < selectedProducts.length) {
-                    // Selected products
-                    final product = selectedProducts[index];
-                    return _buildSelectedProductCard(product);
-                  } else {
-                    // Remaining products (filtered)
-                    final product = _filteredUnselectedProducts()[
-                    index - selectedProducts.length];
-                    return _buildUnselectedProductCard(product);
-                  }
-                },
+                children: [
+                  ...selectedProducts.map((product) =>
+                      _buildSelectedProductCard(product)).toList(),
+                  ..._filteredUnselectedProducts().map((product) =>
+                      _buildUnselectedProductCard(product)).toList(),
+                ],
               ),
             ),
           ],
@@ -149,7 +170,10 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(product.description),
-        trailing: const Icon(Icons.drag_handle),
+        trailing: ReorderableDragStartListener(
+          index: selectedProducts.indexOf(product),
+          child: const Icon(Icons.drag_handle),
+        ),
         onTap: () {
           setState(() {
             // Remove the product from selected products
