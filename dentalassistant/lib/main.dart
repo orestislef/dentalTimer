@@ -1,4 +1,3 @@
-import 'package:dentalassistant/screens/admin/admin.dart';
 import 'package:dentalassistant/screens/welcome.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
