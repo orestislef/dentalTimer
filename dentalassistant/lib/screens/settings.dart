@@ -2,6 +2,8 @@ import 'package:dentalassistant/helpers/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
+import '../api/api.dart';
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
@@ -24,7 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSectionHeader(
               title: "Notification Settings",
               description:
-              "Control whether you want to receive notifications about timers and other events.",
+                  "Control whether you want to receive notifications about timers and other events.",
             ),
             _buildToggleSwitch(
               future: SharedPreferencesHelper().showNotification(),
@@ -37,11 +39,10 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             const SizedBox(height: 20),
-
             _buildSectionHeader(
               title: "Sound Settings",
               description:
-              "Enable or disable sound effects during timer events or speech commands.",
+                  "Enable or disable sound effects during timer events or speech commands.",
             ),
             _buildToggleSwitch(
               future: SharedPreferencesHelper().playSound(),
@@ -54,11 +55,10 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             const SizedBox(height: 20),
-
             _buildSectionHeader(
               title: "Vibration Settings",
               description:
-              "Choose whether to enable vibrations during timer events or speech commands.",
+                  "Choose whether to enable vibrations during timer events or speech commands.",
             ),
             _buildToggleSwitch(
               future: SharedPreferencesHelper().vibrate(),
@@ -71,11 +71,10 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             const SizedBox(height: 30),
-
             _buildInfoTile(
               title: "Offline Speech Recognition",
               description:
-              "Ensure that offline language models are downloaded:\n\n"
+                  "Ensure that offline language models are downloaded:\n\n"
                   "• Android: Settings → Language & Input → Google Voice Typing → Offline Speech Recognition.\n"
                   "• iOS: Supported natively for certain tasks on modern devices.",
               icon: Icons.info_rounded,
@@ -99,6 +98,17 @@ class _SettingsPageState extends State<SettingsPage> {
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
+        ),
+        const SizedBox(height: 8),
+        //text url input
+        TextField(
+          controller: TextEditingController(text: Api().baseUrl),
+          onChanged: (string) {
+            if (string.isEmpty) {
+              string = 'http://192.168.1.5/dental/api.php';
+            }
+            Api().baseUrl = string;
+          },
         ),
         const SizedBox(height: 8),
         Text(
@@ -145,7 +155,6 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
-
 
   Widget _buildInfoTile({
     required String title,

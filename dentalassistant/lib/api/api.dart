@@ -3,9 +3,8 @@ import 'package:dentalassistant/helpers/shared_preferences.dart';
 import 'package:dentalassistant/models/product.dart';
 import 'package:http/http.dart' as http;
 
-const baseUrl = 'http://192.168.1.5/dental/api.php';
-
 class Api {
+  String baseUrl = 'http://192.168.1.5/dental/api.php';
   static final Api _api = Api._internal();
 
   factory Api() {
@@ -20,8 +19,9 @@ class Api {
 
   Future<List<Product>> getProducts() async {
     try {
-      final response =
-      await http.get(Uri.parse(baseUrl), headers: _getHeader()).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(Uri.parse(baseUrl), headers: _getHeader())
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         List<Product> products = [];
         jsonDecode(response.body).forEach((product) {
