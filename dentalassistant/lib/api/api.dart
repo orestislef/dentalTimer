@@ -4,7 +4,7 @@ import 'package:dentalassistant/models/product.dart';
 import 'package:http/http.dart' as http;
 
 class Api {
-  String baseUrl = 'http://192.168.1.5/dental/api.php';
+  String baseUrl = 'https://orestislef.gr/dental/api.php';
   static final Api _api = Api._internal();
 
   factory Api() {

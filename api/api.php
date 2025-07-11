@@ -1,9 +1,9 @@
 <?php
 header("Content-Type: application/json");
 
-$servername = "localhost";
-$username = "root";
-$password = "";
+$servername = "localhost:8080";
+$username = "phpmyadmin";
+$password = "orestislef";
 $dbname = "dental";
 
 // Create connection
