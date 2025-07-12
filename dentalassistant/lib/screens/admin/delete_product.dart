@@ -21,7 +21,6 @@ class _DeleteProductState extends State<DeleteProduct>
   late AnimationController _staggerController;
   late AnimationController _slideController;
   late AnimationController _shakeController;
-  late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _shakeAnimation;
 
@@ -52,13 +51,6 @@ class _DeleteProductState extends State<DeleteProduct>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0.0, 0.3),

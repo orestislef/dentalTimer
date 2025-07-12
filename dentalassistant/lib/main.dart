@@ -1,4 +1,5 @@
 import 'package:dentalassistant/screens/welcome.dart';
+import 'package:dentalassistant/theme/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -12,10 +13,11 @@ void main() async {
 
   runApp(
     EasyLocalization(
-        supportedLocales: LanguageHelper.getAvailableLocales(),
-        path: LanguageHelper.getAssetsPath(),
-        fallbackLocale: LanguageHelper.getAvailableLocales().first,
-        child: const DentalApp()),
+      supportedLocales: LanguageHelper.getAvailableLocales(),
+      path: LanguageHelper.getAssetsPath(),
+      fallbackLocale: LanguageHelper.getAvailableLocales().first,
+      child: const DentalApp(),
+    ),
   );
 }
 
@@ -26,11 +28,16 @@ class DentalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Dentist App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      // Light theme
+      theme: AppTheme.lightTheme,
+      // Dark theme
+      darkTheme: AppTheme.darkTheme,
+      // Automatically follow system theme
+      themeMode: ThemeMode.system,
       home: const WelcomePage(),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
     );
   }
 }

@@ -225,8 +225,8 @@ class _TimerScreenState extends State<TimerScreen>
       final enabled = await SharedPreferencesHelper().vibrate();
       if (!enabled) return;
 
-      if (await Vibration.hasVibrator() ?? false) {
-        if (await Vibration.hasAmplitudeControl() ?? false) {
+      if (await Vibration.hasVibrator()) {
+        if (await Vibration.hasAmplitudeControl()) {
           Vibration.vibrate(
             pattern: [300, 200, 300, 200],
             intensities: [128, 0, 255, 0],
@@ -401,8 +401,8 @@ class _TimerScreenState extends State<TimerScreen>
     return AnimatedBuilder(
       animation: _completionController,
       builder: (context, child) {
-        final backgroundColor = isFinishingAnimation && _backgroundColorAnimation != null
-            ? _backgroundColorAnimation!.value
+        final backgroundColor = isFinishingAnimation
+            ? _backgroundColorAnimation.value
             : theme.scaffoldBackgroundColor;
             
         return Scaffold(
@@ -412,7 +412,7 @@ class _TimerScreenState extends State<TimerScreen>
               children: [
                 Expanded(
                   child: Text(
-                    "${currentProduct.title}",
+                    currentProduct.title,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

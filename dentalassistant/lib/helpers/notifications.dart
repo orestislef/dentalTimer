@@ -28,7 +28,7 @@ class NotificationHelper {
 
     if (permissionGranted == false) {
       // Handle case where permission is not granted.
-      print('Notification permission denied');
+      debugPrint('Notification permission denied');
     }
   }
 
