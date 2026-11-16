@@ -448,12 +448,11 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen>
                     child: ReorderableListView(
                       buildDefaultDragHandles: false,
                       padding: const EdgeInsets.only(bottom: 16),
-                      onReorder: (oldIndex, newIndex) {
+                      onReorderItem: (oldIndex, newIndex) {
                         HapticFeedback.lightImpact();
                         setState(() {
                           if (oldIndex < selectedProducts.length &&
                               newIndex <= selectedProducts.length) {
-                            if (newIndex > oldIndex) newIndex--;
                             final product = selectedProducts.removeAt(oldIndex);
                             selectedProducts.insert(newIndex, product);
                           }

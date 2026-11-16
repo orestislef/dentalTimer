@@ -295,7 +295,7 @@ class _DeleteProductState extends State<DeleteProduct>
                                         borderRadius: BorderRadius.circular(40),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.red.withOpacity(0.3),
+                                            color: Colors.red.withValues(alpha: 0.3),
                                             blurRadius: 20,
                                             spreadRadius: 2,
                                           ),
@@ -360,7 +360,7 @@ class _DeleteProductState extends State<DeleteProduct>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -534,7 +534,7 @@ class _DeleteProductState extends State<DeleteProduct>
                                   return Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -730,6 +730,7 @@ class _DeleteProductState extends State<DeleteProduct>
     });
 
     Api().deleteProduct(id: selectedProduct!.id).then((allOK) {
+      if (!mounted) return;
       if (allOK) {
         _showSuccessSnackBar('Product deleted successfully');
         HapticFeedback.heavyImpact();

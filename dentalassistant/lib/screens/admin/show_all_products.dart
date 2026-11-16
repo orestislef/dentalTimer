@@ -93,9 +93,9 @@ class _ShowAllProductsState extends State<ShowAllProducts>
             borderRadius: BorderRadius.circular(2),
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.3),
-                Theme.of(context).primaryColor.withOpacity(0.8),
-                Theme.of(context).primaryColor.withOpacity(0.3),
+                Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                Theme.of(context).primaryColor.withValues(alpha: 0.3),
               ],
               stops: [0.0, value, 1.0],
             ),
@@ -130,7 +130,7 @@ class _ShowAllProductsState extends State<ShowAllProducts>
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Icon(
@@ -271,7 +271,7 @@ class _ShowAllProductsState extends State<ShowAllProducts>
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(40),
                         ),
                         child: Icon(
@@ -362,8 +362,8 @@ class _ShowAllProductsState extends State<ShowAllProducts>
             gradient: isSelectable
                 ? LinearGradient(
                     colors: [
-                      Theme.of(context).primaryColor.withOpacity(0.05),
-                      Theme.of(context).primaryColor.withOpacity(0.02),
+                      Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                      Theme.of(context).primaryColor.withValues(alpha: 0.02),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -385,10 +385,10 @@ class _ShowAllProductsState extends State<ShowAllProducts>
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                            color: Theme.of(context).primaryColor.withOpacity(0.3),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                             width: 2,
                           ),
                         ),
@@ -460,7 +460,7 @@ class _ShowAllProductsState extends State<ShowAllProducts>
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withOpacity(0.1),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -499,7 +499,7 @@ class _ShowAllProductsState extends State<ShowAllProducts>
                                 ),
                               ),
                             );
-                          }).toList(),
+                          }),
                           if (product.duration.length > 3)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -559,7 +559,7 @@ class _ShowAllProductsState extends State<ShowAllProducts>
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(

@@ -169,7 +169,7 @@ class _EditProductState extends State<EditProduct>
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Icon(
@@ -206,7 +206,7 @@ class _EditProductState extends State<EditProduct>
                     builder: (context, value, child) {
                       return LinearProgressIndicator(
                         value: value,
-                        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           Theme.of(context).primaryColor,
                         ),
@@ -306,7 +306,7 @@ class _EditProductState extends State<EditProduct>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -364,8 +364,8 @@ class _EditProductState extends State<EditProduct>
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
                           colors: [
-                            Theme.of(context).primaryColor.withOpacity(0.1),
-                            Theme.of(context).primaryColor.withOpacity(0.05),
+                            Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                            Theme.of(context).primaryColor.withValues(alpha: 0.05),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -378,7 +378,7 @@ class _EditProductState extends State<EditProduct>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor.withOpacity(0.2),
+                                color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -718,10 +718,10 @@ class _EditProductState extends State<EditProduct>
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 8),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).primaryColor.withOpacity(0.05),
+                                    color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                                      color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                                     ),
                                   ),
                                   child: ListTile(
@@ -729,7 +729,7 @@ class _EditProductState extends State<EditProduct>
                                       width: 32,
                                       height: 32,
                                       decoration: BoxDecoration(
-                                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Center(
@@ -771,7 +771,7 @@ class _EditProductState extends State<EditProduct>
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
@@ -820,7 +820,7 @@ class _EditProductState extends State<EditProduct>
                                   ? LinearGradient(
                                       colors: [
                                         Theme.of(context).primaryColor,
-                                        Theme.of(context).primaryColor.withOpacity(0.8),
+                                        Theme.of(context).primaryColor.withValues(alpha: 0.8),
                                       ],
                                     )
                                   : null,
@@ -979,6 +979,7 @@ class _EditProductState extends State<EditProduct>
       );
 
       Api().updateProduct(product: updatedProduct).then((allOK) {
+        if (!mounted) return;
         if (allOK) {
           _showSuccessSnackBar('Product updated successfully');
           HapticFeedback.heavyImpact();

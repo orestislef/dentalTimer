@@ -375,7 +375,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                     onToggle(value);
                     setState(() {}); // Trigger rebuild to show immediate feedback
                   },
-                  activeColor: theme?.primaryColor,
+                  activeThumbColor: theme?.primaryColor,
                   activeTrackColor: theme?.primaryColor.withValues(alpha: 0.3),
                   inactiveThumbColor: theme?.colorScheme.outline,
                   inactiveTrackColor: theme?.colorScheme.outline.withValues(alpha: 0.2),

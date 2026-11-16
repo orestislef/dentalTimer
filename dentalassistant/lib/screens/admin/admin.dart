@@ -142,8 +142,8 @@ class _AdminPageState extends State<AdminPage>
             borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
-                Theme.of(context).primaryColor.withOpacity(0.05),
+                Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                Theme.of(context).primaryColor.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -165,11 +165,11 @@ class _AdminPageState extends State<AdminPage>
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withOpacity(0.2),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                                  color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                                   blurRadius: 15,
                                   spreadRadius: 2,
                                 ),
@@ -214,10 +214,10 @@ class _AdminPageState extends State<AdminPage>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
@@ -270,10 +270,10 @@ class _AdminPageState extends State<AdminPage>
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: item.color.withOpacity(0.1),
+                    color: item.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: item.color.withOpacity(0.3),
+                      color: item.color.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
@@ -317,7 +317,7 @@ class _AdminPageState extends State<AdminPage>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: item.color.withOpacity(0.1),
+                    color: item.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -405,10 +405,10 @@ class _AdminPageState extends State<AdminPage>
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
           ),
         ),
         child: Column(

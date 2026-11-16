@@ -17,7 +17,7 @@ class NotificationHelper {
       iOS: iosSettings,
     );
 
-    _localNotificationsPlugin.initialize(initSettings);
+    _localNotificationsPlugin.initialize(settings: initSettings);
   }
 
   Future<void> requestPermission() async {
@@ -54,10 +54,10 @@ class NotificationHelper {
 
     try {
       await _localNotificationsPlugin.show(
-        0, // Notification ID
-        title,
-        message,
-        notificationDetails,
+        id: 0,
+        title: title,
+        body: message,
+        notificationDetails: notificationDetails,
       );
     } catch (e) {
       debugPrint('Error sending notification: $e');
